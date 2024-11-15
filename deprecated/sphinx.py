@@ -23,59 +23,45 @@ import textwrap
 from deprecated.classic import ClassicAdapter
 
 
+from typing import Any, Callable, Literal, Optional, Type
+
 class SphinxAdapter(ClassicAdapter):
     """Sphinx adapter -- *for advanced usage only*
 
-    This adapter override the :class:`~deprecated.classic.ClassicAdapter`
-    in order to add the Sphinx directives to the end of the function/class docstring.
+    Adapter that overrides the :class:`~deprecated.classic.ClassicAdapter`
+    to add Sphinx directives to the end of the function/class docstring.
     Such a directive is a `Paragraph-level markup <http://www.sphinx-doc.org/en/stable/markup/para.html>`_
 
     - The directive can be one of "versionadded", "versionchanged" or "deprecated".
     - The version number is added if provided.
-    - The reason message is obviously added in the directive block if not empty.
+    - The reason message is added in the directive block if not empty.
     """
 
     def __init__(
         self,
-        directive,
-        reason="",
-        version="",
-        action=None,
-        category=DeprecationWarning,
-        line_length=70,
+        directive: str,
+        reason: str = "",
+        version: str = "",
+        action: Optional[Literal["error", "ignore", "always", "default", "module", "once"]] = None,
+        category: Type[Warning] = DeprecationWarning,
+        line_length: int = 70
     ):
         """Construct a wrapper adapter.
 
-        :type  directive: str
-        :param directive:
-            Sphinx directive: can be one of "versionadded", "versionchanged" or "deprecated".
-
-        :type  reason: str
-        :param reason:
-            Reason message which documents the deprecation in your library (can be omitted).
-
-        :type  version: str
-        :param version:
-            Version of your project which deprecates this feature.
-            If you follow the `Semantic Versioning <https://semver.org/>`_,
-            the version number has the format "MAJOR.MINOR.PATCH".
-
-        :type  action: str
-        :param action:
-            A warning filter used to activate or not the deprecation warning.
-            Can be one of "error", "ignore", "always", "default", "module", or "once".
-            If ``None`` or empty, the the global filtering mechanism is used.
-            See: `The Warnings Filter`_ in the Python documentation.
-
-        :type  category: type
-        :param category:
-            The warning category to use for the deprecation warning.
-            By default, the category class is :class:`~DeprecationWarning`,
-            you can inherit this class to define your own deprecation warning category.
-
-        :type  line_length: int
-        :param line_length:
-            Max line length of the directive text. If non nul, a long text is wrapped in several lines.
+        Args:
+            directive: Sphinx directive: can be one of "versionadded", "versionchanged" or "deprecated".
+            reason: Reason message which documents the deprecation in your library (can be omitted).
+            version: Version of your project which deprecates this feature.
+                If you follow the `Semantic Versioning <https://semver.org/>`_,
+                the version number has the format "MAJOR.MINOR.PATCH".
+            action: A warning filter used to activate or not the deprecation warning.
+                Can be one of "error", "ignore", "always", "default", "module", or "once".
+                If ``None`` or empty, the global filtering mechanism is used.
+                See: `The Warnings Filter`_ in the Python documentation.
+            category: The warning category to use for the deprecation warning.
+                By default, the category class is :class:`~DeprecationWarning`,
+                you can inherit this class to define your own deprecation warning category.
+            line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
         """
         if not version:
             raise ValueError("'version' argument is required in Sphinx directives")
@@ -145,85 +131,70 @@ class SphinxAdapter(ClassicAdapter):
         )
 
 
-def versionadded(reason="", version="", line_length=70):
-    """This decorator can be used to insert a "versionadded" directive
-    in your function/class docstring in order to documents the
-    version of the project which adds this new functionality in your library.
+def versionadded(reason: str = "", version: str = "", line_length: int = 70) -> Callable:
+    """Insert a "versionadded" directive in the function/class docstring.
 
-    :param str reason:
-        Reason message which documents the addition in your library (can be omitted).
+    Documents the version of the project which adds this new functionality to your library.
 
-    :param str version:
-        Version of your project which adds this feature.
-        If you follow the `Semantic Versioning <https://semver.org/>`_,
-        the version number has the format "MAJOR.MINOR.PATCH", and,
-        in the case of a new functionality, the "PATCH" component should be "0".
+    Args:
+        reason: Reason message which documents the addition in your library (can be omitted).
+        version: Version of your project which adds this feature.
+            If you follow the `Semantic Versioning <https://semver.org/>`_,
+            the version number has the format "MAJOR.MINOR.PATCH", and,
+            in the case of a new functionality, the "PATCH" component should be "0".
+        line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
 
-    :type  line_length: int
-    :param line_length:
-        Max line length of the directive text. If non nul, a long text is wrapped in several lines.
-
-    :return: the decorated function.
+    Returns:
+        The decorated function.
     """
     return SphinxAdapter(
         "versionadded", reason=reason, version=version, line_length=line_length
     )
 
 
-def versionchanged(reason="", version="", line_length=70):
-    """This decorator can be used to insert a "versionchanged" directive
-    in your function/class docstring in order to documents the
-    version of the project which modifies this functionality in your library.
+def versionchanged(reason: str = "", version: str = "", line_length: int = 70) -> Callable:
+    """Insert a "versionchanged" directive in the function/class docstring.
 
-    :param str reason:
-        Reason message which documents the modification in your library (can be omitted).
+    Documents the version of the project which modifies this functionality in your library.
 
-    :param str version:
-        Version of your project which modifies this feature.
-        If you follow the `Semantic Versioning <https://semver.org/>`_,
-        the version number has the format "MAJOR.MINOR.PATCH".
+    Args:
+        reason: Reason message which documents the modification in your library (can be omitted).
+        version: Version of your project which modifies this feature.
+            If you follow the `Semantic Versioning <https://semver.org/>`_,
+            the version number has the format "MAJOR.MINOR.PATCH".
+        line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
 
-    :type  line_length: int
-    :param line_length:
-        Max line length of the directive text. If non nul, a long text is wrapped in several lines.
-
-    :return: the decorated function.
+    Returns:
+        The decorated function.
     """
     return SphinxAdapter(
         "versionchanged", reason=reason, version=version, line_length=line_length
     )
 
 
-def deprecated(reason="", version="", line_length=70, **kwargs):
-    """This decorator can be used to insert a "deprecated" directive
-    in your function/class docstring in order to documents the
-    version of the project which deprecates this functionality in your library.
+def deprecated(reason: str = "", version: str = "", line_length: int = 70, **kwargs: Any) -> Callable:
+    """Insert a "deprecated" directive in the function/class docstring.
 
-    :param str reason:
-        Reason message which documents the deprecation in your library (can be omitted).
+    Documents the version of the project which deprecates this functionality in your library.
 
-    :param str version:
-        Version of your project which deprecates this feature.
-        If you follow the `Semantic Versioning <https://semver.org/>`_,
-        the version number has the format "MAJOR.MINOR.PATCH".
+    Args:
+        reason: Reason message which documents the deprecation in your library (can be omitted).
+        version: Version of your project which deprecates this feature.
+            If you follow the `Semantic Versioning <https://semver.org/>`_,
+            the version number has the format "MAJOR.MINOR.PATCH".
+        line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
+        **kwargs: Additional keyword arguments.
 
-    :type  line_length: int
-    :param line_length:
-        Max line length of the directive text. If non nul, a long text is wrapped in several lines.
+    Keyword Arguments:
+        action: A warning filter used to activate or not the deprecation warning.
+            Can be one of "error", "ignore", "always", "default", "module", or "once".
+            If ``None``, empty or missing, the global filtering mechanism is used.
+        category: The warning category to use for the deprecation warning.
+            By default, the category class is :class:`~DeprecationWarning`,
+            you can inherit this class to define your own deprecation warning category.
 
-    Keyword arguments can be:
-
-    -   "action":
-        A warning filter used to activate or not the deprecation warning.
-        Can be one of "error", "ignore", "always", "default", "module", or "once".
-        If ``None``, empty or missing, the the global filtering mechanism is used.
-
-    -   "category":
-        The warning category to use for the deprecation warning.
-        By default, the category class is :class:`~DeprecationWarning`,
-        you can inherit this class to define your own deprecation warning category.
-
-    :return: a decorator used to deprecate a function.
+    Returns:
+        A decorator used to deprecate a function.
 
     .. versionchanged:: 1.2.13
        Change the signature of the decorator to reflect the valid use cases.
