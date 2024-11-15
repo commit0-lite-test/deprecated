@@ -9,6 +9,7 @@ Classic ``@deprecated`` decorator to deprecate old python classes, functions or 
 import inspect
 import platform
 import warnings
+from typing import Any, Callable, Optional, Type, Union
 import wrapt
 
 try:
@@ -107,7 +108,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
         self.category = category
         super(ClassicAdapter, self).__init__()
 
-    def get_deprecated_msg(self, wrapped, instance):
+    def get_deprecated_msg(self, wrapped: Callable, instance: Any) -> str:
         """Get the deprecation warning message for the user.
 
         :param wrapped: Wrapped class or function.
@@ -134,7 +135,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
             name=wrapped.__name__, reason=self.reason, version=self.version
         )
 
-    def __call__(self, wrapped):
+    def __call__(self, wrapped: Callable) -> Callable:
         """Decorate your class or function.
 
         :param wrapped: Wrapped class or function.
@@ -170,8 +171,8 @@ class ClassicAdapter(wrapt.AdapterFactory):
         return wrapped
 
 
-def deprecated(*args, **kwargs):
-    """This is a decorator which can be used to mark functions
+def deprecated(*args: Any, **kwargs: Any) -> Callable:
+    """A decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used.
 
