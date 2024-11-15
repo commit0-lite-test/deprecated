@@ -85,12 +85,14 @@ class SphinxAdapter(ClassicAdapter):
             reason=reason, version=version, action=action, category=category
         )
 
-    def __call__(self, wrapped):
-        """Add the Sphinx directive to your class or function.
+    def __call__(self, wrapped: Callable) -> Callable:
+        """Add the Sphinx directive to the class or function.
 
-        :param wrapped: Wrapped class or function.
+        Args:
+            wrapped: Wrapped class or function.
 
-        :return: the decorated class or function.
+        Returns:
+            The decorated class or function.
         """
         fmt = ".. {directive}:: {version}" if self.version else ".. {directive}::"
         div_lines = [fmt.format(directive=self.directive, version=self.version)]
@@ -122,18 +124,18 @@ class SphinxAdapter(ClassicAdapter):
             return wrapped
         return super(SphinxAdapter, self).__call__(wrapped)
 
-    def get_deprecated_msg(self, wrapped, instance):
+    def get_deprecated_msg(self, wrapped: Callable, instance: Any) -> str:
         """Get the deprecation warning message (without Sphinx cross-referencing syntax) for the user.
 
-        :param wrapped: Wrapped class or function.
+        Args:
+            wrapped: Wrapped class or function.
+            instance: The object to which the wrapped function was bound when it was called.
 
-        :param instance: The object to which the wrapped function was bound when it was called.
-
-        :return: The warning message.
+        Returns:
+            The warning message.
 
         .. versionadded:: 1.2.12
            Strip Sphinx cross-referencing syntax from warning message.
-
         """
         message = super(SphinxAdapter, self).get_deprecated_msg(wrapped, instance)
         return re.sub(
