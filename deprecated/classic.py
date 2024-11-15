@@ -117,7 +117,21 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
         :return: The warning message.
         """
-        pass
+        if instance is None:
+            if inspect.isclass(wrapped):
+                fmt = "Call to deprecated class {name}."
+            else:
+                fmt = "Call to deprecated function {name}."
+        else:
+            if inspect.isclass(instance):
+                fmt = "Call to deprecated class method {name}."
+            else:
+                fmt = "Call to deprecated method {name}."
+        if self.reason:
+            fmt += " ({reason})"
+        if self.version:
+            fmt += " -- Deprecated since version {version}."
+        return fmt.format(name=wrapped.__name__, reason=self.reason, version=self.version)
 
     def __call__(self, wrapped):
         """
@@ -226,4 +240,9 @@ def deprecated(*args, **kwargs):
            return x + y
 
     """
-    pass
+    if args and isinstance(args[0], (type, types.FunctionType, types.MethodType)):
+        return ClassicAdapter()(args[0])
+    else:
+        def wrapper(wrapped):
+            return ClassicAdapter(**kwargs)(wrapped)
+        return wrapper
