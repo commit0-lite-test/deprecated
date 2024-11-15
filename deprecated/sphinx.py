@@ -23,7 +23,7 @@ import textwrap
 from deprecated.classic import ClassicAdapter
 
 
-from typing import Any, Callable, Literal, Optional, Type, Union
+from typing import Any, Callable, Literal, Optional, Type
 
 
 class SphinxAdapter(ClassicAdapter):
