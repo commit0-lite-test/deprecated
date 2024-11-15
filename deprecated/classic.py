@@ -12,17 +12,11 @@ import warnings
 from typing import Any, Callable, Literal, Optional, Type, Union
 import wrapt
 
-try:
-    import wrapt._wrappers
-
-    _routine_stacklevel = 2
+_routine_stacklevel = 3
+if platform.python_implementation() == "PyPy":
     _class_stacklevel = 2
-except ImportError:
-    _routine_stacklevel = 3
-    if platform.python_implementation() == "PyPy":
-        _class_stacklevel = 2
-    else:
-        _class_stacklevel = 3
+else:
+    _class_stacklevel = 3
 string_types = (type(b""), type(""))
 
 
@@ -173,7 +167,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
                     )
                 if old_new1 is object.__new__:
                     return old_new1(cls)
-                return old_new1(cls, *args, **kwargs)
+                return cast(Callable, old_new1)(cls, *args, **kwargs)
 
             wrapped.__new__ = staticmethod(wrapped_cls)
         return wrapped
