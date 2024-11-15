@@ -9,7 +9,7 @@ Classic ``@deprecated`` decorator to deprecate old python classes, functions or 
 import inspect
 import platform
 import warnings
-from typing import Any, Callable, Optional, Type, Union
+from typing import Any, Callable, Optional, Type
 import wrapt
 
 try:
@@ -76,7 +76,13 @@ class ClassicAdapter(wrapt.AdapterFactory):
            return x + y
     """
 
-    def __init__(self, reason: str = "", version: str = "", action: Optional[str] = None, category: Type[Warning] = DeprecationWarning):
+    def __init__(
+        self,
+        reason: str = "",
+        version: str = "",
+        action: Optional[str] = None,
+        category: Type[Warning] = DeprecationWarning,
+    ):
         """Construct a wrapper adapter.
 
         :type  reason: str
