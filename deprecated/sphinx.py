@@ -25,6 +25,7 @@ from deprecated.classic import ClassicAdapter
 
 from typing import Any, Callable, Literal, Optional, Type
 
+
 class SphinxAdapter(ClassicAdapter):
     """Sphinx adapter -- *for advanced usage only*
 
@@ -42,13 +43,16 @@ class SphinxAdapter(ClassicAdapter):
         directive: str,
         reason: str = "",
         version: str = "",
-        action: Optional[Literal["error", "ignore", "always", "default", "module", "once"]] = None,
+        action: Optional[
+            Literal["error", "ignore", "always", "default", "module", "once"]
+        ] = None,
         category: Type[Warning] = DeprecationWarning,
-        line_length: int = 70
+        line_length: int = 70,
     ):
         """Construct a wrapper adapter.
 
         Args:
+        ----
             directive: Sphinx directive: can be one of "versionadded", "versionchanged" or "deprecated".
             reason: Reason message which documents the deprecation in your library (can be omitted).
             version: Version of your project which deprecates this feature.
@@ -62,6 +66,7 @@ class SphinxAdapter(ClassicAdapter):
                 By default, the category class is :class:`~DeprecationWarning`,
                 you can inherit this class to define your own deprecation warning category.
             line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
+
         """
         if not version:
             raise ValueError("'version' argument is required in Sphinx directives")
@@ -75,10 +80,13 @@ class SphinxAdapter(ClassicAdapter):
         """Add the Sphinx directive to the class or function.
 
         Args:
+        ----
             wrapped: Wrapped class or function.
 
         Returns:
+        -------
             The decorated class or function.
+
         """
         fmt = ".. {directive}:: {version}" if self.version else ".. {directive}::"
         div_lines = [fmt.format(directive=self.directive, version=self.version)]
@@ -114,14 +122,17 @@ class SphinxAdapter(ClassicAdapter):
         """Get the deprecation warning message (without Sphinx cross-referencing syntax) for the user.
 
         Args:
+        ----
             wrapped: Wrapped class or function.
             instance: The object to which the wrapped function was bound when it was called.
 
         Returns:
+        -------
             The warning message.
 
         .. versionadded:: 1.2.12
            Strip Sphinx cross-referencing syntax from warning message.
+
         """
         message = super(SphinxAdapter, self).get_deprecated_msg(wrapped, instance)
         return re.sub(
@@ -131,12 +142,15 @@ class SphinxAdapter(ClassicAdapter):
         )
 
 
-def versionadded(reason: str = "", version: str = "", line_length: int = 70) -> Callable:
+def versionadded(
+    reason: str = "", version: str = "", line_length: int = 70
+) -> Callable:
     """Insert a "versionadded" directive in the function/class docstring.
 
     Documents the version of the project which adds this new functionality to your library.
 
     Args:
+    ----
         reason: Reason message which documents the addition in your library (can be omitted).
         version: Version of your project which adds this feature.
             If you follow the `Semantic Versioning <https://semver.org/>`_,
@@ -145,19 +159,24 @@ def versionadded(reason: str = "", version: str = "", line_length: int = 70) -> 
         line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
 
     Returns:
+    -------
         The decorated function.
+
     """
     return SphinxAdapter(
         "versionadded", reason=reason, version=version, line_length=line_length
     )
 
 
-def versionchanged(reason: str = "", version: str = "", line_length: int = 70) -> Callable:
+def versionchanged(
+    reason: str = "", version: str = "", line_length: int = 70
+) -> Callable:
     """Insert a "versionchanged" directive in the function/class docstring.
 
     Documents the version of the project which modifies this functionality in your library.
 
     Args:
+    ----
         reason: Reason message which documents the modification in your library (can be omitted).
         version: Version of your project which modifies this feature.
             If you follow the `Semantic Versioning <https://semver.org/>`_,
@@ -165,19 +184,24 @@ def versionchanged(reason: str = "", version: str = "", line_length: int = 70) -
         line_length: Max line length of the directive text. If non-zero, a long text is wrapped in several lines.
 
     Returns:
+    -------
         The decorated function.
+
     """
     return SphinxAdapter(
         "versionchanged", reason=reason, version=version, line_length=line_length
     )
 
 
-def deprecated(reason: str = "", version: str = "", line_length: int = 70, **kwargs: Any) -> Callable:
+def deprecated(
+    reason: str = "", version: str = "", line_length: int = 70, **kwargs: Any
+) -> Callable:
     """Insert a "deprecated" directive in the function/class docstring.
 
     Documents the version of the project which deprecates this functionality in your library.
 
     Args:
+    ----
         reason: Reason message which documents the deprecation in your library (can be omitted).
         version: Version of your project which deprecates this feature.
             If you follow the `Semantic Versioning <https://semver.org/>`_,
@@ -186,6 +210,7 @@ def deprecated(reason: str = "", version: str = "", line_length: int = 70, **kwa
         **kwargs: Additional keyword arguments.
 
     Keyword Arguments:
+    -----------------
         action: A warning filter used to activate or not the deprecation warning.
             Can be one of "error", "ignore", "always", "default", "module", or "once".
             If ``None``, empty or missing, the global filtering mechanism is used.
@@ -194,10 +219,12 @@ def deprecated(reason: str = "", version: str = "", line_length: int = 70, **kwa
             you can inherit this class to define your own deprecation warning category.
 
     Returns:
+    -------
         A decorator used to deprecate a function.
 
     .. versionchanged:: 1.2.13
        Change the signature of the decorator to reflect the valid use cases.
+
     """
     return SphinxAdapter(
         "deprecated", reason=reason, version=version, line_length=line_length, **kwargs
