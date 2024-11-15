@@ -11,7 +11,6 @@ import platform
 import warnings
 from typing import Any, Callable, Literal, Optional, Type, Union
 import wrapt
-from warnings import _ActionKind
 
 try:
     import wrapt._wrappers
@@ -81,7 +80,9 @@ class ClassicAdapter(wrapt.AdapterFactory):
         self,
         reason: str = "",
         version: str = "",
-        action: Optional[Literal["error", "ignore", "always", "default", "module", "once"]] = None,
+        action: Optional[
+            Literal["error", "ignore", "always", "default", "module", "once"]
+        ] = None,
         category: Type[Warning] = DeprecationWarning,
     ):
         """Construct a wrapper adapter.
@@ -178,7 +179,9 @@ class ClassicAdapter(wrapt.AdapterFactory):
         return wrapped
 
 
-def deprecated(*args: Any, **kwargs: Any) -> Union[Callable, Callable[[Union[type, Callable]], Callable]]:
+def deprecated(
+    *args: Any, **kwargs: Any
+) -> Union[Callable, Callable[[Union[type, Callable]], Callable]]:
     """A decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used.
@@ -256,6 +259,8 @@ def deprecated(*args: Any, **kwargs: Any) -> Union[Callable, Callable[[Union[typ
     if args and isinstance(args[0], (type, Callable)):
         return ClassicAdapter()(args[0])
     else:
+
         def wrapper(wrapped: Union[type, Callable]) -> Callable:
             return ClassicAdapter(**kwargs)(wrapped)
+
         return wrapper
