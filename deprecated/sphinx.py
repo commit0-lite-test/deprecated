@@ -23,7 +23,7 @@ import textwrap
 from deprecated.classic import ClassicAdapter
 
 
-from typing import Any, Callable, Literal, Optional, Type
+from typing import Any, Callable, Literal, Optional, Type, Union
 
 
 class SphinxAdapter(ClassicAdapter):
@@ -144,7 +144,7 @@ class SphinxAdapter(ClassicAdapter):
 
 def versionadded(
     reason: str = "", version: str = "", line_length: int = 70
-) -> Callable:
+) -> Callable[..., Any]:
     """Insert a "versionadded" directive in the function/class docstring.
 
     Documents the version of the project which adds this new functionality to your library.
@@ -170,7 +170,7 @@ def versionadded(
 
 def versionchanged(
     reason: str = "", version: str = "", line_length: int = 70
-) -> Callable:
+) -> Callable[..., Any]:
     """Insert a "versionchanged" directive in the function/class docstring.
 
     Documents the version of the project which modifies this functionality in your library.
@@ -195,7 +195,7 @@ def versionchanged(
 
 def deprecated(
     reason: str = "", version: str = "", line_length: int = 70, **kwargs: Any
-) -> Callable:
+) -> Callable[..., Any]:
     """Insert a "deprecated" directive in the function/class docstring.
 
     Documents the version of the project which deprecates this functionality in your library.
