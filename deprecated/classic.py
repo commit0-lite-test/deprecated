@@ -1,31 +1,32 @@
-"""
-Classic deprecation warning
+"""Classic deprecation warning
 ===========================
 
 Classic ``@deprecated`` decorator to deprecate old python classes, functions or methods.
 
 .. _The Warnings Filter: https://docs.python.org/3/library/warnings.html#the-warnings-filter
 """
-import functools
+
 import inspect
 import platform
 import warnings
 import wrapt
+
 try:
     import wrapt._wrappers
+
     _routine_stacklevel = 2
     _class_stacklevel = 2
 except ImportError:
     _routine_stacklevel = 3
-    if platform.python_implementation() == 'PyPy':
+    if platform.python_implementation() == "PyPy":
         _class_stacklevel = 2
     else:
         _class_stacklevel = 3
-string_types = (type(b''), type(u''))
+string_types = (type(b""), type(""))
+
 
 class ClassicAdapter(wrapt.AdapterFactory):
-    """
-    Classic adapter -- *for advanced usage only*
+    """Classic adapter -- *for advanced usage only*
 
     This adapter is used to get the deprecation message according to the wrapped object type:
     class, function, standard method, static method, or class method.
@@ -74,9 +75,8 @@ class ClassicAdapter(wrapt.AdapterFactory):
            return x + y
     """
 
-    def __init__(self, reason='', version='', action=None, category=DeprecationWarning):
-        """
-        Construct a wrapper adapter.
+    def __init__(self, reason="", version="", action=None, category=DeprecationWarning):
+        """Construct a wrapper adapter.
 
         :type  reason: str
         :param reason:
@@ -101,15 +101,14 @@ class ClassicAdapter(wrapt.AdapterFactory):
             By default, the category class is :class:`~DeprecationWarning`,
             you can inherit this class to define your own deprecation warning category.
         """
-        self.reason = reason or ''
-        self.version = version or ''
+        self.reason = reason or ""
+        self.version = version or ""
         self.action = action
         self.category = category
         super(ClassicAdapter, self).__init__()
 
     def get_deprecated_msg(self, wrapped, instance):
-        """
-        Get the deprecation warning message for the user.
+        """Get the deprecation warning message for the user.
 
         :param wrapped: Wrapped class or function.
 
@@ -131,11 +130,12 @@ class ClassicAdapter(wrapt.AdapterFactory):
             fmt += " ({reason})"
         if self.version:
             fmt += " -- Deprecated since version {version}."
-        return fmt.format(name=wrapped.__name__, reason=self.reason, version=self.version)
+        return fmt.format(
+            name=wrapped.__name__, reason=self.reason, version=self.version
+        )
 
     def __call__(self, wrapped):
-        """
-        Decorate your class or function.
+        """Decorate your class or function.
 
         :param wrapped: Wrapped class or function.
 
@@ -155,18 +155,23 @@ class ClassicAdapter(wrapt.AdapterFactory):
                 if self.action:
                     with warnings.catch_warnings():
                         warnings.simplefilter(self.action, self.category)
-                        warnings.warn(msg, category=self.category, stacklevel=_class_stacklevel)
+                        warnings.warn(
+                            msg, category=self.category, stacklevel=_class_stacklevel
+                        )
                 else:
-                    warnings.warn(msg, category=self.category, stacklevel=_class_stacklevel)
+                    warnings.warn(
+                        msg, category=self.category, stacklevel=_class_stacklevel
+                    )
                 if old_new1 is object.__new__:
                     return old_new1(cls)
                 return old_new1(cls, *args, **kwargs)
+
             wrapped.__new__ = staticmethod(wrapped_cls)
         return wrapped
 
+
 def deprecated(*args, **kwargs):
-    """
-    This is a decorator which can be used to mark functions
+    """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used.
 
@@ -243,6 +248,8 @@ def deprecated(*args, **kwargs):
     if args and isinstance(args[0], (type, types.FunctionType, types.MethodType)):
         return ClassicAdapter()(args[0])
     else:
+
         def wrapper(wrapped):
             return ClassicAdapter(**kwargs)(wrapped)
+
         return wrapper
