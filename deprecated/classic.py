@@ -76,7 +76,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
            return x + y
     """
 
-    def __init__(self, reason="", version="", action=None, category=DeprecationWarning):
+    def __init__(self, reason: str = "", version: str = "", action: Optional[str] = None, category: Type[Warning] = DeprecationWarning):
         """Construct a wrapper adapter.
 
         :type  reason: str
@@ -246,11 +246,11 @@ def deprecated(*args: Any, **kwargs: Any) -> Callable:
            return x + y
 
     """
-    if args and isinstance(args[0], (type, types.FunctionType, types.MethodType)):
+    if args and isinstance(args[0], (type, Callable)):
         return ClassicAdapter()(args[0])
     else:
 
-        def wrapper(wrapped):
+        def wrapper(wrapped: Callable) -> Callable:
             return ClassicAdapter(**kwargs)(wrapped)
 
         return wrapper
