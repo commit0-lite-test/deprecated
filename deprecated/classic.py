@@ -161,6 +161,16 @@ class ClassicAdapter(wrapt.AdapterFactory):
                 warnings.warn(msg, category=self.category, stacklevel=2)
             return wrapped(*args, **kwargs)
 
+        if inspect.isclass(wrapped):
+            original_new = wrapped.__new__
+
+            @classmethod
+            def deprecated_new(cls, *args, **kwargs):
+                wrapper(cls, None, args, kwargs)
+                return original_new(cls, *args, **kwargs)
+
+            wrapped.__new__ = deprecated_new
+
         return wrapper(wrapped)
 
 
