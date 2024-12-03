@@ -23,7 +23,21 @@ string_types = (type(b""), type(""))
 import re
 
 class ClassicAdapter(wrapt.AdapterFactory):
-    # ... [keep the existing code]
+    def __init__(
+        self,
+        reason: str = "",
+        version: str = "",
+        action: Optional[
+            Literal["error", "ignore", "always", "default", "module", "once"]
+        ] = None,
+        category: Type[Warning] = DeprecationWarning,
+        line_length: int = 70,
+    ):
+        self.reason = reason
+        self.version = version
+        self.action = action
+        self.category = category
+        self.line_length = line_length
 
     def get_deprecated_msg(self, wrapped: Callable, instance: Any) -> str:
         """Get the deprecation warning message for the user.
@@ -105,13 +119,27 @@ class ClassicAdapter(wrapt.AdapterFactory):
             warnings.warn(msg, category=self.category, stacklevel=3)
 
 
-def deprecated(*args, **kwargs):
+def deprecated(
+    reason: str = "",
+    version: str = "",
+    action: Optional[
+        Literal["error", "ignore", "always", "default", "module", "once"]
+    ] = None,
+    category: Type[Warning] = DeprecationWarning,
+    line_length: int = 70,
+):
     """
     This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used.
     """
-    if len(args) == 1 and callable(args[0]):
-        return ClassicAdapter()(args[0])
-    else:
-        return ClassicAdapter(*args, **kwargs)
+    def decorator(func):
+        return ClassicAdapter(
+            reason=reason,
+            version=version,
+            action=action,
+            category=category,
+            line_length=line_length
+        )(func)
+
+    return decorator
