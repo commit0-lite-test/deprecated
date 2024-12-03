@@ -150,111 +150,27 @@ class ClassicAdapter(wrapt.AdapterFactory):
         .. versionchanged:: 1.2.8
            The warning filter is not set if the *action* parameter is ``None`` or empty.
         """
-        if inspect.isclass(wrapped):
-            old_new1 = wrapped.__new__
+        @wrapt.decorator
+        def wrapper(wrapped, instance, args, kwargs):
+            msg = self.get_deprecated_msg(wrapped, instance)
+            if self.action:
+                with warnings.catch_warnings():
+                    warnings.simplefilter(self.action, self.category)
+                    warnings.warn(msg, category=self.category, stacklevel=2)
+            else:
+                warnings.warn(msg, category=self.category, stacklevel=2)
+            return wrapped(*args, **kwargs)
 
-            def wrapped_cls(cls: type, *args: Any, **kwargs: Any) -> Any:
-                msg = self.get_deprecated_msg(wrapped, None)
-                if self.action:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter(self.action, self.category)  # type: ignore
-                        warnings.warn(
-                            msg, category=self.category, stacklevel=_class_stacklevel
-                        )
-                else:
-                    warnings.warn(
-                        msg, category=self.category, stacklevel=_class_stacklevel
-                    )
-                if old_new1 is object.__new__:
-                    return old_new1(cls)
-                return cast(Callable, old_new1)(cls, *args, **kwargs)
-
-            wrapped.__new__ = staticmethod(wrapped_cls)
-        return wrapped
+        return wrapper(wrapped)
 
 
-def deprecated(
-    *args: Any, **kwargs: Any
-) -> Union[Callable, Callable[[Union[type, Callable]], Callable]]:
-    """A decorator which can be used to mark functions
+def deprecated(*args, **kwargs):
+    """
+    This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used.
-
-    **Classic usage:**
-
-    To use this, decorate your deprecated function with **@deprecated** decorator:
-
-    .. code-block:: python
-
-       from deprecated import deprecated
-
-
-       @deprecated
-       def some_old_function(x, y):
-           return x + y
-
-    You can also decorate a class or a method:
-
-    .. code-block:: python
-
-       from deprecated import deprecated
-
-
-       class SomeClass(object):
-           @deprecated
-           def some_old_method(self, x, y):
-               return x + y
-
-
-       @deprecated
-       class SomeOldClass(object):
-           pass
-
-    You can give a *reason* message to help the developer to choose another function/class,
-    and a *version* number to specify the starting version number of the deprecation.
-
-    .. code-block:: python
-
-       from deprecated import deprecated
-
-
-       @deprecated(reason="use another function", version='1.2.0')
-       def some_old_function(x, y):
-           return x + y
-
-    The *category* keyword argument allow you to specify the deprecation warning class of your choice.
-    By default, :exc:`DeprecationWarning` is used but you can choose :exc:`FutureWarning`,
-    :exc:`PendingDeprecationWarning` or a custom subclass.
-
-    .. code-block:: python
-
-       from deprecated import deprecated
-
-
-       @deprecated(category=PendingDeprecationWarning)
-       def some_old_function(x, y):
-           return x + y
-
-    The *action* keyword argument allow you to locally change the warning filtering.
-    *action* can be one of "error", "ignore", "always", "default", "module", or "once".
-    If ``None``, empty or missing, the the global filtering mechanism is used.
-    See: `The Warnings Filter`_ in the Python documentation.
-
-    .. code-block:: python
-
-       from deprecated import deprecated
-
-
-       @deprecated(action="error")
-       def some_old_function(x, y):
-           return x + y
-
     """
-    if args and isinstance(args[0], (type, Callable)):
+    if len(args) == 1 and callable(args[0]):
         return ClassicAdapter()(args[0])
     else:
-
-        def wrapper(wrapped: Union[type, Callable]) -> Callable:
-            return ClassicAdapter(**kwargs)(wrapped)
-
-        return wrapper
+        return ClassicAdapter(**kwargs)
