@@ -74,21 +74,11 @@ class ClassicAdapter(wrapt.AdapterFactory):
             if inspect.isclass(wrapped):
                 if not hasattr(wrapped, '_deprecated_warning_issued'):
                     msg = self.get_deprecated_msg(wrapped, instance)
-                    if self.action:
-                        with warnings.catch_warnings():
-                            warnings.simplefilter(self.action, self.category)
-                            warnings.warn(msg, category=self.category, stacklevel=2)
-                    else:
-                        warnings.warn(msg, category=self.category, stacklevel=2)
+                    self._warn(msg)
                     wrapped._deprecated_warning_issued = True
             else:
                 msg = self.get_deprecated_msg(wrapped, instance)
-                if self.action:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter(self.action, self.category)
-                        warnings.warn(msg, category=self.category, stacklevel=2)
-                else:
-                    warnings.warn(msg, category=self.category, stacklevel=2)
+                self._warn(msg)
             return wrapped(*args, **kwargs)
 
         if inspect.isclass(wrapped):
@@ -96,7 +86,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
             @classmethod
             def deprecated_new(cls, *args, **kwargs):
-                if not hasattr(cls, '_deprecated_warning_issued'):
+                if cls is wrapped or not hasattr(cls, '_deprecated_warning_issued'):
                     wrapper(cls, None, args, kwargs)
                 if original_new is object.__new__:
                     return object.__new__(cls)
@@ -105,6 +95,14 @@ class ClassicAdapter(wrapt.AdapterFactory):
             wrapped.__new__ = deprecated_new
 
         return wrapper(wrapped)
+
+    def _warn(self, msg):
+        if self.action:
+            with warnings.catch_warnings():
+                warnings.simplefilter(self.action, self.category)
+                warnings.warn(msg, category=self.category, stacklevel=3)
+        else:
+            warnings.warn(msg, category=self.category, stacklevel=3)
 
 
 def deprecated(*args, **kwargs):

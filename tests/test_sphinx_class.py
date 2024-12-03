@@ -56,7 +56,7 @@ def test_class_deprecation_using_deprecated_decorator():
         warnings.simplefilter("always")
         obj = MySubClass()
 
-    assert len(warns) == 2
+    assert len(warns) == 1
     assert isinstance(obj, MyBaseClass)
     assert inspect.isclass(MyBaseClass)
     assert issubclass(MySubClass, MyBaseClass)
