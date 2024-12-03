@@ -72,9 +72,11 @@ class SphinxAdapter(ClassicAdapter):
             raise ValueError("'version' argument is required in Sphinx directives")
         self.directive = directive
         self.line_length = line_length
-        super().__init__(
-            reason=reason, version=version, action=action, category=category
-        )
+        self.reason = reason
+        self.version = version
+        self.action = action
+        self.category = category
+        super().__init__()
 
     def __call__(self, wrapped: Callable) -> Callable:
         """Add the Sphinx directive to the class or function.
