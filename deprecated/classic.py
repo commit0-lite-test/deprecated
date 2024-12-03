@@ -166,16 +166,16 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
             @classmethod
             def deprecated_new(cls, *args, **kwargs):
-                wrapper(cls, None, args, kwargs)
+                if not hasattr(cls, '_deprecated_warning_issued') or not cls._deprecated_warning_issued:
+                    wrapper(cls, None, args, kwargs)
+                    cls._deprecated_warning_issued = True
                 if original_new is object.__new__:
                     return object.__new__(cls)
-                return original_new(*args, **kwargs)
+                return original_new(cls, *args, **kwargs)
 
             wrapped.__new__ = deprecated_new
-
-        if inspect.isclass(wrapped):
             wrapped._deprecated_warning_issued = False
-        
+
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
             if inspect.isclass(wrapped):
