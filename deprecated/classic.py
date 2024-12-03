@@ -64,16 +64,40 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
     def __call__(self, wrapped: Callable) -> Callable:
         """Decorate your class or function."""
+        if inspect.isclass(wrapped):
+            return self._decorate_class(wrapped)
+        else:
+            return self._decorate_function(wrapped)
+
+    def _decorate_class(self, wrapped: Type) -> Type:
+        original_new = wrapped.__new__
+
+        @classmethod
+        def deprecated_new(cls, *args, **kwargs):
+            if cls is wrapped:
+                self._warn(self.get_deprecated_msg(wrapped, None))
+            if original_new is object.__new__:
+                return object.__new__(cls)
+            return original_new(cls, *args, **kwargs)
+
+        wrapped.__new__ = deprecated_new
+        return wrapped
+
+    def _decorate_function(self, wrapped: Callable) -> Callable:
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
-            msg = self.get_deprecated_msg(wrapped, instance)
-            self._warn(msg)
+            self._warn(self.get_deprecated_msg(wrapped, instance))
             return wrapped(*args, **kwargs)
 
         return wrapper(wrapped)
 
     def _warn(self, msg):
-        warnings.warn(msg, category=self.category, stacklevel=2)
+        if self.action:
+            with warnings.catch_warnings():
+                warnings.simplefilter(self.action, self.category)
+                warnings.warn(msg, category=self.category, stacklevel=3)
+        else:
+            warnings.warn(msg, category=self.category, stacklevel=3)
 
 
 def deprecated(
