@@ -72,7 +72,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
             if inspect.isclass(wrapped):
-                if not getattr(wrapped, '_deprecated_warning_issued', False):
+                if not hasattr(wrapped, '_deprecated_warning_issued'):
                     msg = self.get_deprecated_msg(wrapped, instance)
                     if self.action:
                         with warnings.catch_warnings():
@@ -96,8 +96,8 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
             @classmethod
             def deprecated_new(cls, *args, **kwargs):
-                if cls is wrapped or not issubclass(cls, wrapped):
-                    wrapper(wrapped, None, args, kwargs)
+                if not hasattr(cls, '_deprecated_warning_issued'):
+                    wrapper(cls, None, args, kwargs)
                 if original_new is object.__new__:
                     return object.__new__(cls)
                 return original_new(cls, *args, **kwargs)
