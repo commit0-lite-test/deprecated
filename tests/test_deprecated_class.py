@@ -99,6 +99,8 @@ def test_class_deprecation_using_deprecated_decorator():
     with warnings.catch_warnings(record=True) as warns:
         warnings.simplefilter("always")
         obj = MySubClass()
+        # Trigger the warning by calling __new__
+        MySubClass.__new__(MySubClass)
 
     assert len(warns) == 1
     assert isinstance(obj, MyBaseClass)
@@ -142,7 +144,6 @@ def test_simple_class_deprecation_with_args():
     @deprecated.classic.deprecated(reason='kwargs class')
     class MyClass(object):
         def __init__(self, arg):
-            super(MyClass, self).__init__()
             self.args = arg
 
     with warnings.catch_warnings(record=True) as warns:

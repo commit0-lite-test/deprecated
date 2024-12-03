@@ -173,6 +173,4 @@ def deprecated(*args, **kwargs):
     if len(args) == 1 and callable(args[0]):
         return ClassicAdapter()(args[0])
     else:
-        def wrapper(func):
-            return ClassicAdapter(*args, **kwargs)(func)
-        return wrapper
+        return ClassicAdapter(*args, **kwargs)
