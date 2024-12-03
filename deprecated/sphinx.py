@@ -72,7 +72,8 @@ class SphinxAdapter(ClassicAdapter):
             raise ValueError("'version' argument is required in Sphinx directives")
         self.directive = directive
         self.line_length = line_length
-        super(SphinxAdapter, self).__init__(
+        ClassicAdapter.__init__(
+            self,
             reason=reason, version=version, action=action, category=category
         )
 
@@ -136,8 +137,8 @@ class SphinxAdapter(ClassicAdapter):
         """
         message = super(SphinxAdapter, self).get_deprecated_msg(wrapped, instance)
         return re.sub(
-            r":(?:class|func|meth|mod|attr|exc|const|data):`[^`]+`",
-            lambda m: m.group(0)[1:-1].split("`")[1],
+            r':(?:[a-z]+:)?`([^`]+)`',
+            r'`\1`',
             message,
         )
 
