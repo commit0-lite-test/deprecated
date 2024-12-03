@@ -151,3 +151,21 @@ def test_simple_class_deprecation_with_args():
     assert len(warns) == 1
     assert isinstance(obj, MyClass)
     assert inspect.isclass(MyClass)
+    assert obj.args == 5
+
+def test_class_with_custom_new():
+    @deprecated.classic.deprecated(reason='custom new')
+    class MyCustomClass:
+        def __new__(cls, *args, **kwargs):
+            instance = super().__new__(cls)
+            instance.custom_attr = 'custom'
+            return instance
+
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter("always")
+        obj = MyCustomClass()
+
+    assert len(warns) == 1
+    assert isinstance(obj, MyCustomClass)
+    assert inspect.isclass(MyCustomClass)
+    assert obj.custom_attr == 'custom'
