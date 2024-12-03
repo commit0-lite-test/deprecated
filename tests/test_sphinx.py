@@ -388,6 +388,8 @@ def test_sphinx_syntax_trimming(reason, expected):
         foo()
     warn = warns[0]
     assert expected in str(warn.message)
+    assert ":function:" not in str(warn.message)
+    assert ":py:func:" not in str(warn.message)
 
 
 # noinspection SpellCheckingInspection
@@ -422,3 +424,5 @@ def test_get_deprecated_msg(reason, expected):
     adapter = deprecated.sphinx.SphinxAdapter("deprecated", reason=reason, version="1")
     actual = adapter.get_deprecated_msg(lambda: None, None)
     assert expected in actual
+    for sphinx_syntax in [':func:', ':function:', ':class:', ':exc:', ':exception:', ':meth:', ':method:', ':py:func:', ':cpp:func:', ':js:func:', ':r:', ':d:r:']:
+        assert sphinx_syntax not in actual
