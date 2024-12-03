@@ -72,8 +72,7 @@ class SphinxAdapter(ClassicAdapter):
             raise ValueError("'version' argument is required in Sphinx directives")
         self.directive = directive
         self.line_length = line_length
-        ClassicAdapter.__init__(
-            self,
+        super().__init__(
             reason=reason, version=version, action=action, category=category
         )
 
@@ -135,7 +134,7 @@ class SphinxAdapter(ClassicAdapter):
            Strip Sphinx cross-referencing syntax from warning message.
 
         """
-        message = super(SphinxAdapter, self).get_deprecated_msg(wrapped, instance)
+        message = super().get_deprecated_msg(wrapped, instance)
         return re.sub(
             r':(?:[a-z]+:)?`([^`]+)`',
             r'`\1`',
