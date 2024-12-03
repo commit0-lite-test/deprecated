@@ -40,14 +40,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
         self.line_length = line_length
 
     def get_deprecated_msg(self, wrapped: Callable, instance: Any) -> str:
-        """Get the deprecation warning message for the user.
-
-        :param wrapped: Wrapped class or function.
-
-        :param instance: The object to which the wrapped function was bound when it was called.
-
-        :return: The warning message.
-        """
+        """Get the deprecation warning message for the user."""
         if instance is None:
             if inspect.isclass(wrapped):
                 fmt = "Call to deprecated class {name}."
@@ -63,7 +56,6 @@ class ClassicAdapter(wrapt.AdapterFactory):
         if self.version:
             fmt += " -- Deprecated since version {version}."
         
-        # Remove Sphinx syntax from reason
         cleaned_reason = re.sub(r':([\w-]+):`([^`]+)`', r'`\2`', self.reason)
         
         return fmt.format(
@@ -71,52 +63,17 @@ class ClassicAdapter(wrapt.AdapterFactory):
         )
 
     def __call__(self, wrapped: Callable) -> Callable:
-        """Decorate your class or function.
-
-        :param wrapped: Wrapped class or function.
-
-        :return: the decorated class or function.
-
-        .. versionchanged:: 1.2.4
-           Don't pass arguments to :meth:`object.__new__` (other than *cls*).
-
-        .. versionchanged:: 1.2.8
-           The warning filter is not set if the *action* parameter is ``None`` or empty.
-        """
+        """Decorate your class or function."""
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
-            if inspect.isclass(wrapped):
-                if not hasattr(wrapped, '_deprecated_warning_issued'):
-                    msg = self.get_deprecated_msg(wrapped, instance)
-                    self._warn(msg)
-                    wrapped._deprecated_warning_issued = True
-            else:
-                msg = self.get_deprecated_msg(wrapped, instance)
-                self._warn(msg)
+            msg = self.get_deprecated_msg(wrapped, instance)
+            self._warn(msg)
             return wrapped(*args, **kwargs)
-
-        if inspect.isclass(wrapped):
-            original_new = wrapped.__new__
-
-            @classmethod
-            def deprecated_new(cls, *args, **kwargs):
-                if cls is wrapped or not hasattr(cls, '_deprecated_warning_issued'):
-                    wrapper(cls, None, args, kwargs)
-                if original_new is object.__new__:
-                    return object.__new__(cls)
-                return original_new(cls, *args, **kwargs)
-
-            wrapped.__new__ = deprecated_new
 
         return wrapper(wrapped)
 
     def _warn(self, msg):
-        if self.action:
-            with warnings.catch_warnings():
-                warnings.simplefilter(self.action, self.category)
-                warnings.warn(msg, category=self.category, stacklevel=3)
-        else:
-            warnings.warn(msg, category=self.category, stacklevel=3)
+        warnings.warn(msg, category=self.category, stacklevel=2)
 
 
 def deprecated(
@@ -133,13 +90,15 @@ def deprecated(
     as deprecated. It will result in a warning being emitted
     when the function is used.
     """
-    def decorator(func):
+    if callable(reason):
+        # Direct decoration
+        return ClassicAdapter()(reason)
+    else:
+        # Parameterized decoration
         return ClassicAdapter(
             reason=reason,
             version=version,
             action=action,
             category=category,
             line_length=line_length
-        )(func)
-
-    return decorator
+        )
