@@ -71,32 +71,6 @@ class ClassicAdapter(wrapt.AdapterFactory):
         """
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
-            msg = self.get_deprecated_msg(wrapped, instance)
-            if self.action:
-                with warnings.catch_warnings():
-                    warnings.simplefilter(self.action, self.category)
-                    warnings.warn(msg, category=self.category, stacklevel=2)
-            else:
-                warnings.warn(msg, category=self.category, stacklevel=2)
-            return wrapped(*args, **kwargs)
-
-        if inspect.isclass(wrapped):
-            original_new = wrapped.__new__
-
-            @classmethod
-            def deprecated_new(cls, *args, **kwargs):
-                if not hasattr(cls, '_deprecated_warning_issued') or not cls._deprecated_warning_issued:
-                    wrapper(cls, None, args, kwargs)
-                    cls._deprecated_warning_issued = True
-                if original_new is object.__new__:
-                    return object.__new__(cls)
-                return original_new(cls, *args, **kwargs)
-
-            wrapped.__new__ = deprecated_new
-            wrapped._deprecated_warning_issued = False
-
-        @wrapt.decorator
-        def wrapper(wrapped, instance, args, kwargs):
             if inspect.isclass(wrapped):
                 if not getattr(wrapped, '_deprecated_warning_issued', False):
                     msg = self.get_deprecated_msg(wrapped, instance)
@@ -116,6 +90,18 @@ class ClassicAdapter(wrapt.AdapterFactory):
                 else:
                     warnings.warn(msg, category=self.category, stacklevel=2)
             return wrapped(*args, **kwargs)
+
+        if inspect.isclass(wrapped):
+            original_new = wrapped.__new__
+
+            @classmethod
+            def deprecated_new(cls, *args, **kwargs):
+                wrapper(cls, None, args, kwargs)
+                if original_new is object.__new__:
+                    return object.__new__(cls)
+                return original_new(cls, *args, **kwargs)
+
+            wrapped.__new__ = deprecated_new
 
         return wrapper(wrapped)
 
