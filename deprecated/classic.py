@@ -123,7 +123,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
             if inspect.isclass(wrapped):
                 fmt = "Call to deprecated class {name}."
             else:
-                fmt = "Call to deprecated function {name}."
+                fmt = "Call to deprecated function (or staticmethod) {name}."
         else:
             if inspect.isclass(instance):
                 fmt = "Call to deprecated class method {name}."
@@ -172,5 +172,7 @@ def deprecated(*args, **kwargs):
     """
     if len(args) == 1 and callable(args[0]):
         return ClassicAdapter()(args[0])
+    elif len(args) == 1 and not callable(args[0]):
+        raise TypeError("deprecated() decorator must be called with a callable as its first argument")
     else:
         return ClassicAdapter(**kwargs)
