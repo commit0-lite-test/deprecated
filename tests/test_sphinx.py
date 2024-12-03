@@ -377,6 +377,14 @@ def test_can_catch_warnings():
     [
         ("Use :function:`bar` instead", "Use `bar` instead"),
         ("Use :py:func:`bar` instead", "Use `bar` instead"),
+        ("Use :class:`Baz` instead", "Use `Baz` instead"),
+        ("Use :exc:`Baz` instead", "Use `Baz` instead"),
+        ("Use :exception:`Baz` instead", "Use `Baz` instead"),
+        ("Use :meth:`Baz.bar` instead", "Use `Baz.bar` instead"),
+        ("Use :method:`Baz.bar` instead", "Use `Baz.bar` instead"),
+        ("Use :cpp:func:`bar` instead", "Use `bar` instead"),
+        ("Use :js:func:`bar` instead", "Use `bar` instead"),
+        ("Use :func:`~pkg.mod.bar` instead", "Use `~pkg.mod.bar` instead"),
     ],
 )
 def test_sphinx_syntax_trimming(reason, expected):
@@ -388,6 +396,7 @@ def test_sphinx_syntax_trimming(reason, expected):
         foo()
     warn = warns[0]
     assert expected in str(warn.message)
+    assert ':' not in str(warn.message)
     assert ":function:" not in str(warn.message)
     assert ":py:func:" not in str(warn.message)
 
