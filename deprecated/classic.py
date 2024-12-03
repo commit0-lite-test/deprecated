@@ -96,7 +96,8 @@ class ClassicAdapter(wrapt.AdapterFactory):
 
             @classmethod
             def deprecated_new(cls, *args, **kwargs):
-                wrapper(cls, None, args, kwargs)
+                if cls is wrapped or not issubclass(cls, wrapped):
+                    wrapper(wrapped, None, args, kwargs)
                 if original_new is object.__new__:
                     return object.__new__(cls)
                 return original_new(cls, *args, **kwargs)
