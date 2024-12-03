@@ -172,6 +172,8 @@ def deprecated(*args, **kwargs):
     """
     if len(args) == 1 and callable(args[0]):
         return ClassicAdapter()(args[0])
+    elif len(args) == 1 and not callable(args[0]):
+        raise TypeError("deprecated() decorator must be called with a callable")
     else:
         def wrapper(func):
             return ClassicAdapter(*args, **kwargs)(func)
