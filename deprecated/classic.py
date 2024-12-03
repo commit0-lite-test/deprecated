@@ -179,7 +179,7 @@ class ClassicAdapter(wrapt.AdapterFactory):
         @wrapt.decorator
         def wrapper(wrapped, instance, args, kwargs):
             if inspect.isclass(wrapped):
-                if not wrapped._deprecated_warning_issued:
+                if not getattr(wrapped, '_deprecated_warning_issued', False):
                     msg = self.get_deprecated_msg(wrapped, instance)
                     if self.action:
                         with warnings.catch_warnings():
